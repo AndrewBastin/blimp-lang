@@ -1,31 +1,32 @@
 package blimp.syntax.statement.statements.assigns
 
 import blimp.lex.Token
-import blimp.lex.tokens.multichar.IdentifierToken
-import blimp.lex.tokens.multichar.Keyword
-import blimp.lex.tokens.multichar.KeywordToken
+import blimp.lex.tokens.multichar.*
 import blimp.lex.tokens.singlechar.AssignToken
 import blimp.runtime.Environment
+import blimp.syntax.Node
+import blimp.syntax.NodeEmitter
+import blimp.syntax.NodeMatcher
+import blimp.syntax.expression.Expression
 import blimp.syntax.statement.Statement
-import blimp.syntax.statement.StatementProvider
-import blimp.syntax.statement.statements.ExpressionStatement
-import blimp.syntax.statement.validation.StatementValidator
 
-class CreateAssignStatement(val identifier: String, val expression: ExpressionStatement, val mutable: Boolean = false): Statement() {
+class CreateAssignStatement(val identifier: String, val expression: Expression, val mutable: Boolean = false): Statement() {
 
-    companion object: StatementProvider<CreateAssignStatement>() {
+    companion object Emitter: NodeEmitter() {
 
-        override fun matchTokenChain(tokens: List<Token>) = StatementValidator.validate(tokens) {
+        override val matcher = NodeMatcher.create {
+
+            checkTermination = true
 
             requiredToken {
                 it is KeywordToken && it.keyword == Keyword.Let
             }
 
-            optionalToken {
+            optionalToken("isVar") {
                 it is KeywordToken && it.keyword == Keyword.Var
             }
 
-            requiredToken {
+            requiredToken("identifier") {
                 it is IdentifierToken
             }
 
@@ -33,57 +34,25 @@ class CreateAssignStatement(val identifier: String, val expression: ExpressionSt
                 it is AssignToken
             }
 
-            takeRemaining {
-                ExpressionStatement.matchTokenChain(it.reversed())
+            considerTokens("expr") {
+                Expression.isExpressionToken(it)
+            } takeAll {
+                Expression.matchTokenChain(it)
             }
 
         }
 
-        // Assumed this is validated
-        override fun create(tokens: List<Token>): CreateAssignStatement {
+        override fun getNode(tokens: List<Token>): Node {
 
-            lateinit var identifier: String
-            lateinit var expression: ExpressionStatement
+            matcher.getSingleTokenTags(tokens).apply {
 
-            var mutable = false
+                val isVariable = containsKey("isVar")
+                val identifier = (this["identifier"] as? IdentifierToken) ?: throw Exception("Improper Identifier")
+                val exprTokens = matcher.getTokenCollectionTags(tokens)["expr"] ?: throw Exception("Improper Expression")
 
-            StatementValidator.validate(tokens) {
-
-                requiredToken {
-                    it is KeywordToken && it.keyword == Keyword.Let
-                }
-
-                optionalToken {
-                    if (it is KeywordToken && it.keyword == Keyword.Var) {
-                        mutable = true
-
-                        true
-                    } else false
-                }
-
-                requiredToken {
-                    if (it is IdentifierToken) {
-                        identifier = it.identifier
-
-                        true
-                    } else false
-                }
-
-                requiredToken {
-                    it is AssignToken
-                }
-
-                takeRemaining {
-                    if (ExpressionStatement.matchTokenChain(it)) {
-                        expression = ExpressionStatement.create(it)
-
-                        true
-                    } else false
-                }
+                return CreateAssignStatement(identifier.identifier, Expression.create(exprTokens), isVariable)
 
             }
-
-            return CreateAssignStatement(identifier, expression, mutable)
         }
 
     }

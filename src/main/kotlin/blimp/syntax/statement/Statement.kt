@@ -1,12 +1,19 @@
 package blimp.syntax.statement
 
+import blimp.runtime.BlimpObject
 import blimp.runtime.Environment
-import blimp.syntax.SyntaxElement
+import blimp.syntax.Node
 
-// Statements do not have a core value, rather are just a pattern of arranging tokens/expressions
-abstract class Statement: SyntaxElement() {
+abstract class Statement: Node() {
+
+    override val canEvaluate = false
+    override val isClosure = false
 
     // Executes the statement
-    abstract fun execute(env: Environment)
+    abstract override fun execute(env: Environment)
+
+    override fun evaluate(env: Environment): BlimpObject {
+        throw Exception("Cannot evaluate a statement")
+    }
 
 }

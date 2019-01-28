@@ -31,14 +31,16 @@ object Lexer {
         BracketToken.Emitter,
         DotToken.Emitter,
         NotToken.Emitter,
-        WhitespaceToken.Emitter
+        WhitespaceToken.Emitter,
+        SemicolonToken.Emitter,
+        NewLineToken.Emitter
 
     )
 
     fun lex(input: String): List<Token> {
 
         var working = input
-        var tokens = mutableListOf<Token>()
+        val tokens = mutableListOf<Token>()
 
         while (working.isNotEmpty()) {
             val emitter = emitters.find { it.canEmit(working) }

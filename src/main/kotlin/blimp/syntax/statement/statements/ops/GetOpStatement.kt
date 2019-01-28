@@ -8,44 +8,35 @@ import blimp.runtime.BlimpObject
 import blimp.runtime.Environment
 import blimp.runtime.typing.Types
 import blimp.runtime.typing.types.primitive.*
+import blimp.syntax.Node
+import blimp.syntax.NodeEmitter
+import blimp.syntax.NodeMatcher
 import blimp.syntax.statement.Statement
-import blimp.syntax.statement.StatementProvider
-import blimp.syntax.statement.validation.StatementValidator
 
 class GetOpStatement(val identifier: String): Statement() {
 
-    companion object : StatementProvider<GetOpStatement>() {
+    companion object Emitter: NodeEmitter() {
 
-        override fun matchTokenChain(tokens: List<Token>) = StatementValidator.validate(tokens) {
+        override val matcher = NodeMatcher.create {
+
+            checkTermination = true
 
             requiredToken {
                 it is KeywordToken && it.keyword == Keyword.Get
             }
 
-            requiredToken {
+            requiredToken("identifier") {
                 it is IdentifierToken
             }
 
         }
 
-        override fun create(tokens: List<Token>): GetOpStatement {
-            var identifier: String? = null
+        override fun getNode(tokens: List<Token>): Node {
+            val identifier = matcher.getSingleTokenTags(tokens)["identifier"]
 
-            StatementValidator.validate(tokens) {
-
-                requiredToken {
-                    it is KeywordToken && it.keyword == Keyword.Get
-                }
-
-                requiredToken {
-                    identifier = (it as IdentifierToken).identifier
-
-                    true
-                }
-
-            }
-
-            return GetOpStatement(identifier ?: throw Exception("Get Op failed, Identifier is null..."))
+            if (identifier != null && identifier is IdentifierToken) {
+                return GetOpStatement(identifier.identifier)
+            } else throw Exception("Improper Identifier")
         }
 
     }

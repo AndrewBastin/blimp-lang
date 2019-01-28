@@ -2,8 +2,8 @@ package blimp
 
 import blimp.lex.Lexer
 import blimp.runtime.Environment
-import blimp.syntax.TokenProcessor
-import blimp.syntax.statement.statements.ExpressionStatement
+import blimp.syntax.Parser
+import blimp.syntax.closures.REPLBlock
 
 fun main() {
 
@@ -18,16 +18,25 @@ fun main() {
         val command = readLine()!!
 
         try {
+//            val tokens = Lexer.lex(command)
+//
+//            //println(tokens)
+//
+//            val statement = TokenProcessor.getStatementFromTokenChain(tokens)
+//
+//            if (statement is Expression) {
+//                val eval = statement.evaluate(env)
+//                println(" -> $eval \t\t [${eval.type.typeName}]")
+//            } else statement.execute(env)
+
             val tokens = Lexer.lex(command)
+            val nodes = Parser.getNodes(tokens)
+            val block = REPLBlock(nodes)
 
-            //println(tokens)
-
-            val statement = TokenProcessor.getStatementFromTokenChain(tokens)
-
-            if (statement is ExpressionStatement) {
-                val eval = statement.evaluate(env)
+            if (block.canEvaluate) {
+                val eval = block.evaluate(env)
                 println(" -> $eval \t\t [${eval.type.typeName}]")
-            } else statement.execute(env)
+            } else block.execute(env)
 
         } catch (e: Exception) {
             println(e.message)

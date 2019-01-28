@@ -2,19 +2,23 @@ package blimp.syntax.statement.statements.assigns.operators
 
 import blimp.lex.Token
 import blimp.lex.tokens.doublechar.ModuloAssignToken
-import blimp.lex.tokens.multichar.IdentifierToken
+import blimp.lex.tokens.multichar.*
 import blimp.runtime.Environment
+import blimp.syntax.Node
+import blimp.syntax.NodeEmitter
+import blimp.syntax.NodeMatcher
+import blimp.syntax.expression.Expression
 import blimp.syntax.statement.Statement
-import blimp.syntax.statement.StatementProvider
-import blimp.syntax.statement.statements.ExpressionStatement
-import blimp.syntax.statement.validation.StatementValidator
 
-class ModuloAssignStatement(val identifier: String, val expr: ExpressionStatement): Statement() {
+class ModuloAssignStatement(val identifier: String, val expr: Expression): Statement() {
 
-    companion object : StatementProvider<ModuloAssignStatement>() {
-        override fun matchTokenChain(tokens: List<Token>) = StatementValidator.validate(tokens) {
+    companion object Emitter: NodeEmitter() {
 
-            requiredToken {
+        override val matcher = NodeMatcher.create {
+
+            checkTermination = true
+
+            requiredToken("ident") {
                 it is IdentifierToken
             }
 
@@ -22,44 +26,21 @@ class ModuloAssignStatement(val identifier: String, val expr: ExpressionStatemen
                 it is ModuloAssignToken
             }
 
-            takeRemaining {
-                ExpressionStatement.matchTokenChain(it)
+            considerTokens("expr") {
+                Expression.isExpressionToken(it)
+            } takeAll {
+                Expression.matchTokenChain(it)
             }
 
         }
 
-        override fun create(tokens: List<Token>): ModuloAssignStatement {
+        override fun getNode(tokens: List<Token>): Node {
 
-            var identifier: String? = null
-            var expr: ExpressionStatement? = null
+            val identifier = (matcher.getSingleTokenTags(tokens)["ident"] as? IdentifierToken) ?: throw Exception("Improper identifier")
+            val exprTokens = matcher.getTokenCollectionTags(tokens)["expr"] ?: throw Exception("Improper expression")
 
-            StatementValidator.validate(tokens) {
+            return ModuloAssignStatement(identifier.identifier, Expression.create(exprTokens))
 
-                requiredToken {
-                    if (it is IdentifierToken) {
-                        identifier = it.identifier
-
-                        true
-                    } else false
-                }
-
-                requiredToken {
-                    it is ModuloAssignToken
-                }
-
-                takeRemaining {
-                    expr = ExpressionStatement.create(it)
-
-                    true
-                }
-
-            }
-
-
-            return ModuloAssignStatement(
-                identifier = identifier ?: throw Exception("Add Assign Statement parse failed, identifier null"),
-                expr = expr ?: throw Exception("Add Assign Statement parse failed, expression null")
-            )
         }
 
     }

@@ -9,6 +9,9 @@ import blimp.runtime.BlimpObject
 import blimp.runtime.Environment
 import blimp.runtime.typing.Type
 import blimp.runtime.typing.Types
+import blimp.syntax.Node
+import blimp.syntax.NodeEmitter
+import blimp.syntax.NodeMatcher
 import blimp.syntax.expression.operators.BinaryOperator
 import blimp.syntax.expression.operators.NotOperator
 import blimp.syntax.expression.operators.UnaryOperator
@@ -87,9 +90,59 @@ private fun convertToPostfix(tokens: List<Token>): List<Token> {
     return result
 }
 
-abstract class Expression {
+abstract class Expression: Node() {
+
+    override val canEvaluate = true
+    override val isClosure = false
 
     companion object {
+
+        // Expression as a line statement
+        val Emitter = object: NodeEmitter() {
+
+            override val matcher = NodeMatcher.create {
+                checkTermination = true
+
+                considerTokens("expr") {
+                    isExpressionToken(it)
+                } takeAll {
+                    Expression.matchTokenChain(it)
+                }
+            }
+            override fun getNode(tokens: List<Token>): Node {
+                val exprTokens = matcher.getTokenCollectionTags(tokens)["expr"] ?: throw Exception("Improper Expression")
+
+                return Expression.create(exprTokens)
+            }
+
+        }
+
+        // Returns whether a given token can be a part of an expression
+        fun isExpressionToken(token: Token): Boolean {
+            return token is StringToken || token is NumberToken || token is BooleanToken
+                    || token is BinaryOpToken || token is CharToken || token is NotToken || token is BracketToken || token is IdentifierToken
+        }
+
+        fun matchTokenChain(tokens: List<Token>): Boolean {
+            try {
+
+                // First we check if the token contains any statement-ey tokens
+                // i.e any tokens which might result in a statement
+                if (tokens.any {
+                        !isExpressionToken(it)
+                    }) return false
+
+                // If we can formulate an expression, then we can form an expression token
+                Expression.createExpression(tokens)
+                return true
+
+            } catch (e: Exception) {
+                return false
+            }
+        }
+
+        // Assumes it validates correctly
+        fun create(tokens: List<Token>): Expression = createExpression(tokens)
 
         fun createExpression(tokens: List<Token>, stack: Stack<Expression> = Stack()): Expression {
 
@@ -156,8 +209,12 @@ abstract class Expression {
 
     }
 
-    abstract fun evaluate(env: Environment): BlimpObject
+    abstract override fun evaluate(env: Environment): BlimpObject
 
+
+    override fun execute(env: Environment) {
+        evaluate(env)
+    }
 }
 
 class UnaryExpression(private val expr: Expression, private val operator: UnaryOperator): Expression() {

@@ -1,56 +1,44 @@
 package blimp.syntax.statement.statements.ops
 
 import blimp.lex.Token
-import blimp.lex.tokens.multichar.Keyword
-import blimp.lex.tokens.multichar.KeywordToken
+import blimp.lex.tokens.multichar.*
 import blimp.runtime.Environment
+import blimp.syntax.Node
+import blimp.syntax.NodeEmitter
+import blimp.syntax.NodeMatcher
+import blimp.syntax.expression.Expression
 import blimp.syntax.statement.Statement
-import blimp.syntax.statement.StatementProvider
-import blimp.syntax.statement.statements.ExpressionStatement
-import blimp.syntax.statement.validation.StatementValidator
 
-class PutOpStatement(val expression: ExpressionStatement): Statement() {
+class PutOpStatement(val expression: Expression): Statement() {
 
-    override fun execute(env: Environment) {
-        println(expression.evaluate(env).value)
-    }
+    companion object Emitter: NodeEmitter() {
+        override val matcher = NodeMatcher.create {
 
-    companion object : StatementProvider<PutOpStatement>() {
-
-        override fun matchTokenChain(tokens: List<Token>) = StatementValidator.validate(tokens) {
+            checkTermination = true
 
             requiredToken {
                 it is KeywordToken && it.keyword == Keyword.Put
             }
 
-            takeRemaining {
-                ExpressionStatement.matchTokenChain(it)
+            considerTokens("expr") {
+                Expression.isExpressionToken(it)
+            } takeAll {
+                Expression.matchTokenChain(it)
             }
 
         }
+        override fun getNode(tokens: List<Token>): Node {
+            val expr = matcher.getTokenCollectionTags(tokens)["expr"]
 
-        override fun create(tokens: List<Token>): PutOpStatement {
-
-            var expr: ExpressionStatement? = null
-
-            StatementValidator.validate(tokens) {
-
-                requiredToken {
-                    it is KeywordToken
-                }
-
-                takeRemaining {
-                    expr = ExpressionStatement.create(it)
-
-                    ExpressionStatement.matchTokenChain(it)
-                }
-
-            }
-
-            return PutOpStatement(expr ?: throw Exception("Put Op failed, cannot parse expression"))
-
+            if (expr != null) {
+                return PutOpStatement(Expression.create(expr))
+            } else throw Exception("Improper expression")
         }
 
+    }
+
+    override fun execute(env: Environment) {
+        println(expression.evaluate(env).value)
     }
 
 }

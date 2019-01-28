@@ -6,63 +6,56 @@ import blimp.lex.tokens.multichar.Keyword
 import blimp.lex.tokens.multichar.KeywordToken
 import blimp.lex.tokens.multichar.StringToken
 import blimp.runtime.Environment
-import blimp.syntax.TokenProcessor
+import blimp.syntax.Node
+import blimp.syntax.NodeEmitter
+import blimp.syntax.NodeMatcher
+import blimp.syntax.Parser
+import blimp.syntax.closures.FileBlock
 import blimp.syntax.statement.Statement
 import blimp.syntax.statement.StatementProvider
 import blimp.syntax.statement.validation.StatementValidator
 import java.io.File
+import java.lang.Exception
 import kotlin.system.measureTimeMillis
 
-class ExecOpStatement(val filePath: String): Statement() {
+data class ExecOpStatement(val filePath: String): Statement() {
 
-    companion object : StatementProvider<ExecOpStatement>() {
+    companion object Emitter: NodeEmitter() {
 
-        override fun matchTokenChain(tokens: List<Token>) = StatementValidator.validate(tokens) {
+        override val matcher = NodeMatcher.create {
+
+            checkTermination = true
 
             requiredToken {
                 it is KeywordToken && it.keyword == Keyword.Exec
             }
 
-            requiredToken {
+            requiredToken("execPath") {
                 it is StringToken
             }
 
         }
 
-        override fun create(tokens: List<Token>): ExecOpStatement {
+        override fun getNode(tokens: List<Token>): Node {
+            val path = matcher.getSingleTokenTags(tokens)["execPath"]
 
-            var filePath: String? = null
-
-            StatementValidator.validate(tokens) {
-
-                requiredToken {
-                    it is KeywordToken
-                }
-
-                requiredToken {
-                    if (it is StringToken) {
-                        filePath = it.value
-
-                        true
-                    } else false
-                }
-
-            }
-
-            return ExecOpStatement(filePath ?: throw Exception("Exec op failed, file path came null"))
+            if (path != null && path is StringToken) {
+                return ExecOpStatement(path.value)
+            } else throw Exception("Improper exec path")
         }
 
     }
 
-
     override fun execute(env: Environment) {
 
         val time = measureTimeMillis {
-            File(filePath).readLines().forEach {
-                TokenProcessor.getStatementFromTokenChain(
-                    Lexer.lex(it)
-                ).execute(env)
-            }
+            FileBlock(
+                Parser.getNodes(
+                    Lexer.lex(
+                        File(filePath).readText()
+                    )
+                )
+            ).execute(env)
         }
 
         println("\nCompleted Execution in $time ms")
