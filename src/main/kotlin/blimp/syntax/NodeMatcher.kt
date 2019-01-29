@@ -22,6 +22,9 @@ class NodeMatcher {
     // Check whether the matcher ends the pattern with a semicolon or a new line token
     var checkTermination: Boolean = false
 
+    // Whether not to ignore newline tokens encountered
+    var dontEatNewLines: Boolean = false
+
     companion object {
 
         fun create(predicate: NodeMatcher.() -> Unit): NodeMatcher {
@@ -104,15 +107,17 @@ class NodeMatcher {
 
 
                 fun clearNewlines() {
-                    while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() is NewLineToken) {
-                        tokensToValidate.pop()
-                        if (tokensToValidate.isNotEmpty() && tokensToValidate.peek() !is NewLineToken) {
-                            val token = tokensToValidate.peek()
+                    if (!dontEatNewLines) {
+                        while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() is NewLineToken) {
+                            tokensToValidate.pop()
+                            if (tokensToValidate.isNotEmpty() && tokensToValidate.peek() !is NewLineToken) {
+                                val token = tokensToValidate.peek()
 
-                            // Syntatically meaningful new line (next token maybe part of new statement, leave it to termination checks)
-                            if (!query.consider(token)) {
-                                tokensToValidate.push(NewLineToken())
-                                return
+                                // Syntatically meaningful new line (next token maybe part of new statement, leave it to termination checks)
+                                if (!query.consider(token)) {
+                                    tokensToValidate.push(NewLineToken())
+                                    return
+                                }
                             }
                         }
                     }
