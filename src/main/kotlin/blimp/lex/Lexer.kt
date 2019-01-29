@@ -18,6 +18,8 @@ object Lexer {
         ModuloAssignToken.Emitter,
 
         // Multi Char
+        SingleLineCommentToken.Emitter,
+        MultilineCommentToken.Emitter,
         BinaryOpToken.Emitter,
         CharToken.Emitter,
         StringToken.Emitter,
@@ -53,6 +55,9 @@ object Lexer {
 
         // Filter Whitespace Tokens
         tokens.removeAll { it is WhitespaceToken }
+
+        // Filter comment tokens
+        tokens.removeAll { it is MultilineCommentToken || it is SingleLineCommentToken }
 
         return tokens
     }
