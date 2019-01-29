@@ -103,9 +103,19 @@ class NodeMatcher {
                 val tokenList = mutableListOf<Token>()
 
 
-                fun clearNewlines(): Boolean {
-                    while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() is NewLineToken) tokensToValidate.pop()
-                    return true
+                fun clearNewlines() {
+                    while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() is NewLineToken) {
+                        tokensToValidate.pop()
+                        if (tokensToValidate.isNotEmpty() && tokensToValidate.peek() !is NewLineToken) {
+                            val token = tokensToValidate.peek()
+
+                            // Syntatically meaningful new line (next token maybe part of new statement, leave it to termination checks)
+                            if (!query.consider(token)) {
+                                tokensToValidate.push(NewLineToken())
+                                return
+                            }
+                        }
+                    }
                 }
 
                 clearNewlines()
