@@ -1,4 +1,4 @@
-package blimp.syntax.expression.operators
+package blimp.runtime.execution.executors.expression.operators
 
 import blimp.runtime.BlimpObject
 import blimp.runtime.Environment

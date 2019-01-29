@@ -36,9 +36,4 @@ class PutOpStatement(val expression: Expression): Statement() {
         }
 
     }
-
-    override fun execute(env: Environment) {
-        println(expression.evaluate(env).value)
-    }
-
 }

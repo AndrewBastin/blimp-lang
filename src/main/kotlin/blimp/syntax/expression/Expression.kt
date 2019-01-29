@@ -12,9 +12,9 @@ import blimp.runtime.typing.Types
 import blimp.syntax.Node
 import blimp.syntax.NodeEmitter
 import blimp.syntax.NodeMatcher
-import blimp.syntax.expression.operators.BinaryOperator
-import blimp.syntax.expression.operators.NotOperator
-import blimp.syntax.expression.operators.UnaryOperator
+import blimp.runtime.execution.executors.expression.operators.BinaryOperator
+import blimp.runtime.execution.executors.expression.operators.NotOperator
+import blimp.runtime.execution.executors.expression.operators.UnaryOperator
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -208,43 +208,14 @@ abstract class Expression: Node() {
         }
 
     }
-
-    abstract override fun evaluate(env: Environment): BlimpObject
-
-
-    override fun execute(env: Environment) {
-        evaluate(env)
-    }
 }
 
-class UnaryExpression(private val expr: Expression, private val operator: UnaryOperator): Expression() {
+class UnaryExpression(val expr: Expression, val operator: UnaryOperator): Expression()
 
-    override fun evaluate(env: Environment): BlimpObject = operator.evaluate(expr, env)
-}
+class IdentifierExpression(val identifier: String): Expression()
 
-class IdentifierExpression(private val identifier: String): Expression() {
+class LiteralExpression(val value: Any, val type: Type): Expression()
 
-    override fun evaluate(env: Environment): BlimpObject = env.objects[identifier] ?: throw Exception("Variable '$identifier' not defined")
+class GroupingExpression(val expression: Expression): Expression()
 
-}
-
-class LiteralExpression(private val value: Any, private val type: Type): Expression() {
-
-    override fun evaluate(env: Environment): BlimpObject {
-        return BlimpObject(type, value)
-    }
-
-}
-
-class GroupingExpression(private val expression: Expression): Expression() {
-
-    override fun evaluate(env: Environment): BlimpObject = expression.evaluate(env)
-
-}
-
-class BinaryExpression(private val left: Expression, private val operator: BinaryOperator, private val right: Expression): Expression() {
-
-    override fun evaluate(env: Environment): BlimpObject = operator.evaluate(left, right, env)
-
-
-}
+class BinaryExpression(val left: Expression, val operator: BinaryOperator, val right: Expression): Expression()

@@ -57,9 +57,4 @@ class CreateAssignStatement(val identifier: String, val expression: Expression, 
 
     }
 
-    override fun execute(env: Environment) {
-        if (env.objects.containsKey(identifier)) throw Exception("Variable '$identifier' already declared")
-        env.objects[identifier] = expression.evaluate(env).copy(mutable = this.mutable)
-    }
-
 }

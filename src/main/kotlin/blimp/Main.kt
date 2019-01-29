@@ -2,6 +2,7 @@ package blimp
 
 import blimp.lex.Lexer
 import blimp.runtime.Environment
+import blimp.runtime.Executor
 import blimp.syntax.Parser
 import blimp.syntax.closures.REPLBlock
 
@@ -23,9 +24,9 @@ fun main() {
             val block = REPLBlock(nodes)
 
             if (block.canEvaluate) {
-                val eval = block.evaluate(env)
+                val eval = Executor.evaluate(block, env)
                 println(" -> $eval \t\t [${eval.type.typeName}]")
-            } else block.execute(env)
+            } else Executor.execute(block, env)
 
         } catch (e: Exception) {
             println(e.message)

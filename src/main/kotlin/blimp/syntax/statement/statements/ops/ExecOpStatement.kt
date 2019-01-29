@@ -13,7 +13,6 @@ import blimp.syntax.Parser
 import blimp.syntax.closures.FileBlock
 import blimp.syntax.statement.Statement
 import blimp.syntax.statement.StatementProvider
-import blimp.syntax.statement.validation.StatementValidator
 import java.io.File
 import java.lang.Exception
 import kotlin.system.measureTimeMillis
@@ -45,21 +44,5 @@ data class ExecOpStatement(val filePath: String): Statement() {
         }
 
     }
-
-    override fun execute(env: Environment) {
-
-        val time = measureTimeMillis {
-            FileBlock(
-                Parser.getNodes(
-                    Lexer.lex(
-                        File(filePath).readText()
-                    )
-                )
-            ).execute(env)
-        }
-
-        println("\nCompleted Execution in $time ms")
-    }
-
 
 }

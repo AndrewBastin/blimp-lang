@@ -2,7 +2,7 @@ package blimp.lex.tokens.multichar
 
 import blimp.lex.Token
 import blimp.lex.TokenEmitter
-import blimp.syntax.expression.operators.*
+import blimp.runtime.execution.executors.expression.operators.*
 
 enum class BinaryOp(val precedence: Int, val operator: BinaryOperator) {
 

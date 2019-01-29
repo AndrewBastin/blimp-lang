@@ -45,24 +45,4 @@ class ModuloAssignStatement(val identifier: String, val expr: Expression): State
 
     }
 
-    override fun execute(env: Environment) {
-        if (env.objects.contains(identifier)) {
-
-            if (env.objects[identifier]!!.mutable) {
-
-                val obj = expr.evaluate(env)
-
-                if (obj.type == env.objects[identifier]!!.type) {
-
-                    env.objects[identifier] = env.objects[identifier]!!.copy(
-                        value = env.objects[identifier]!!.type.typeOperator.mod(env.objects[identifier]!!, obj).value
-                    )
-
-                } else throw Exception("Cannot assign a ${obj.type.typeName} to a ${env.objects[identifier]!!.type.typeName}")
-
-            } else throw Exception("Variable '$identifier' cannot be changed.")
-
-        } else throw Exception("Variable '$identifier' is not defined")
-    }
-
 }
