@@ -18,17 +18,6 @@ fun main() {
         val command = readLine()!!
 
         try {
-//            val tokens = Lexer.lex(command)
-//
-//            //println(tokens)
-//
-//            val statement = TokenProcessor.getStatementFromTokenChain(tokens)
-//
-//            if (statement is Expression) {
-//                val eval = statement.evaluate(env)
-//                println(" -> $eval \t\t [${eval.type.typeName}]")
-//            } else statement.execute(env)
-
             val tokens = Lexer.lex(command)
             val nodes = Parser.getNodes(tokens)
             val block = REPLBlock(nodes)
