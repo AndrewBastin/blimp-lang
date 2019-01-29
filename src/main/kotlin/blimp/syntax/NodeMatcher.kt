@@ -56,10 +56,23 @@ class NodeMatcher {
     }
 
     fun getSingleTokenTags(tokens: List<Token>): Map<String, Token> {
+        return process(tokens).second
+    }
 
-        // NOTE : HACK : Update to the getRemainder function should be here as well
+    fun getTokenCollectionTags(tokens: List<Token>): Map<String, List<Token>> {
+        return process(tokens).third
+    }
 
-        val map = mutableMapOf<String, Token>()
+    fun getRemainder(tokens: List<Token>): List<Token> {
+        return process(tokens).first
+    }
+
+    // To commonize getRemainder, getSingleTokenTags, getTokenCollectionTags
+    // The triple returns the values for the functions as in the above order
+    private fun process(tokens: List<Token>) : Triple<List<Token>, Map<String, Token>, Map<String, List<Token>>> {
+
+        val singleTokenTags = mutableMapOf<String, Token>()
+        val tokenCollectionTags = mutableMapOf<String, List<Token>>()
 
         val tokensToValidate = tokens.toStack()
 
@@ -81,66 +94,8 @@ class NodeMatcher {
                 } else {
                     val tag = query.tag
                     if (tag != null) {
-                        map[tag] = token
+                        singleTokenTags[tag] = token
                     }
-                }
-
-            } else if (query is ConsiderTakeAllQuery) {
-
-                val tokenList = mutableListOf<Token>()
-
-
-                fun clearNewlines(): Boolean {
-                    while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() is NewLineToken) tokensToValidate.pop()
-                    return true
-                }
-
-                clearNewlines()
-                while (!tokensToValidate.empty() && tokensToValidate.peek() !is SemicolonToken && query.consider(tokensToValidate.peek())) {
-                    tokenList.add(tokensToValidate.pop())
-
-                    clearNewlines()
-                }
-
-                if (!query.predicate(tokenList)) throw Exception("Consider query failed")
-
-            }
-
-        }
-
-        if (checkTermination && tokensToValidate.isNotEmpty()) {
-            // The match should terminate the node emission with a semicolon or a new line
-            if (tokensToValidate.peek() is NewLineToken || tokensToValidate.peek() is SemicolonToken) {
-                tokensToValidate.pop()
-            } else throw Exception("Failed termination check")
-        }
-
-        return map
-    }
-
-    fun getTokenCollectionTags(tokens: List<Token>): Map<String, List<Token>> {
-
-        // NOTE : HACK : Update to the getRemainder function should be here as well
-
-        val map = mutableMapOf<String, List<Token>>()
-
-        val tokensToValidate = tokens.toStack()
-
-        for (query in queries) {
-
-            if (query is MatcherQuery) {
-
-                var token = tokensToValidate.pop()
-
-                while (token is NewLineToken) token = tokensToValidate.pop()
-                if (token is SemicolonToken) throw Exception("Semicolon terminated the matcher")
-
-                if (!query.predicate(token)) {
-
-                    // Required Query failed
-                    if (query.required) throw Exception("Required query failed")
-                    else tokensToValidate.push(token)
-
                 }
 
             } else if (query is ConsiderTakeAllQuery) {
@@ -165,61 +120,9 @@ class NodeMatcher {
                     val tag = query.tag
 
                     if (tag != null) {
-                        map[tag] = tokenList
+                        tokenCollectionTags[tag] = tokenList
                     }
                 }
-            }
-
-        }
-
-        if (checkTermination && tokensToValidate.isNotEmpty()) {
-            // The match should terminate the node emission with a semicolon or a new line
-            if (tokensToValidate.peek() is NewLineToken || tokensToValidate.peek() is SemicolonToken) {
-                tokensToValidate.pop()
-            } else throw Exception("Failed termination check")
-        }
-
-        return map
-    }
-
-    fun getRemainder(tokens: List<Token>): List<Token> {
-        val tokensToValidate = tokens.toStack()
-
-        for (query in queries) {
-
-            if (query is MatcherQuery) {
-
-                var token = tokensToValidate.pop()
-
-                while (token is NewLineToken) token = tokensToValidate.pop()
-                if (token is SemicolonToken) throw Exception("Semicolon terminated the matcher")
-
-                if (!query.predicate(token)) {
-
-                    // Required Query failed
-                    if (query.required) throw Exception("Required query failed")
-                    else tokensToValidate.push(token)
-
-                }
-
-            } else if (query is ConsiderTakeAllQuery) {
-
-                val tokenList = mutableListOf<Token>()
-
-
-                fun clearNewlines(): Boolean {
-                    while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() is NewLineToken) tokensToValidate.pop()
-                    return true
-                }
-
-                clearNewlines()
-                while (!tokensToValidate.empty() && tokensToValidate.peek() !is SemicolonToken && query.consider(tokensToValidate.peek())) {
-                    tokenList.add(tokensToValidate.pop())
-
-                    clearNewlines()
-                }
-
-                if (!query.predicate(tokenList)) throw Exception("Consider query failed")
 
             }
 
@@ -232,8 +135,8 @@ class NodeMatcher {
             } else throw Exception("Failed termination check")
         }
 
+        return Triple(tokensToValidate.reversed().toList(), singleTokenTags, tokenCollectionTags)
 
-        return tokensToValidate.reversed().toList()
     }
 
 }
