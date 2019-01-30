@@ -16,7 +16,14 @@ fun main() {
     while (true) {
 
         print(">>> ")
-        val command = readLine()!!
+        var command = readLine()!!
+
+        while (command.endsWith("~")) {
+            command = command.removeSuffix("~")
+            print("    ")
+            command += "\n"
+            command += readLine()!!
+        }
 
         try {
             val tokens = Lexer.lex(command)
@@ -30,6 +37,8 @@ fun main() {
 
         } catch (e: Exception) {
             println(e.message)
+
+            throw e
         }
 
     }
