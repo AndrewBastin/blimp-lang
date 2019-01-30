@@ -13,43 +13,53 @@ class ClosureBlock(children: List<Node>): Block(children) {
 
     override val canEvaluate = false
 
-    companion object Emitter: NodeEmitter() {
-        override val matcher = NodeMatcher.create {
+    companion object {
 
-            dontEatNewLines = true
+        fun applyClosureMatching(tag: String, matcher: NodeMatcher) {
 
-            var blockIndex = 1
+            matcher.apply {
+                dontEatNewLines = true
 
-            requiredToken {
-                it is CurlyBraceToken && it.type == CurlyBraceType.Opening
-            }
+                var blockIndex = 1
 
-            considerTokens("contents") {
-                if (it is CurlyBraceToken) {
-                    if (it.type == CurlyBraceType.Opening) blockIndex++
-                    else blockIndex--
+                requiredToken {
+                    it is CurlyBraceToken && it.type == CurlyBraceType.Opening
+                }
 
-                    if (blockIndex <= 0) {
-                        blockIndex = 1 // Resetting for next execution of the function
-                        false
+                considerTokens(tag) {
+                    if (it is CurlyBraceToken) {
+                        if (it.type == CurlyBraceType.Opening) blockIndex++
+                        else blockIndex--
+
+                        if (blockIndex <= 0) {
+                            blockIndex = 1 // Resetting for next execution of the function
+                            false
+                        } else true
                     } else true
-                } else true
-            } takeAll {
-                true
+                } takeAll {
+                    true
+                }
+
+                requiredToken {
+                    it is CurlyBraceToken && it.type == CurlyBraceType.Closing
+                }
             }
 
-            requiredToken {
-                it is CurlyBraceToken && it.type == CurlyBraceType.Closing
-            }
 
         }
 
-        override fun getNode(tokens: List<Token>): Node {
-            val closureTokens = matcher.getTokenCollectionTags(tokens)["contents"]?.toMutableList() ?: throw Exception("Improper contents")
-            val nodes = Parser.getNodes(closureTokens)
-            return ClosureBlock(nodes)
-        }
+        val Emitter = object:NodeEmitter() {
+            override val matcher = NodeMatcher.create {
+                applyClosureMatching("contents", this)
+            }
 
+            override fun getNode(tokens: List<Token>): Node {
+                val closureTokens = matcher.getTokenCollectionTags(tokens)["contents"]?.toMutableList() ?: throw Exception("Improper contents")
+                val nodes = Parser.getNodes(closureTokens)
+                return ClosureBlock(nodes)
+            }
+
+        }
     }
 
 }
