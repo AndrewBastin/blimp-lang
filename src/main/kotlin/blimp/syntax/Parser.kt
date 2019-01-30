@@ -1,6 +1,7 @@
 package blimp.syntax
 
 import blimp.lex.Token
+import blimp.syntax.closures.ClosureBlock
 import blimp.syntax.expression.Expression
 import blimp.syntax.statement.statements.assigns.AssignStatement
 import blimp.syntax.statement.statements.assigns.CreateAssignStatement
@@ -12,6 +13,9 @@ import blimp.syntax.statement.statements.ops.PutOpStatement
 object Parser {
 
     private val emitters = arrayOf(
+
+        // Closures
+        ClosureBlock.Emitter,
 
         // Statements
         // OP Statements

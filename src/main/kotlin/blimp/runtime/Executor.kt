@@ -1,5 +1,6 @@
 package blimp.runtime
 
+import blimp.runtime.execution.executors.closures.ClosureBlockExecutor
 import blimp.runtime.execution.executors.closures.FileBlockExecutor
 import blimp.runtime.execution.executors.closures.REPLBlockExecutor
 import blimp.runtime.execution.executors.expression.*
@@ -10,6 +11,7 @@ import blimp.runtime.execution.executors.statement.ops.ExecOpStatementExecutor
 import blimp.runtime.execution.executors.statement.ops.GetOpStatementExecutor
 import blimp.runtime.execution.executors.statement.ops.PutOpStatementExecutor
 import blimp.syntax.Node
+import blimp.syntax.closures.ClosureBlock
 import blimp.syntax.closures.FileBlock
 import blimp.syntax.closures.REPLBlock
 import blimp.syntax.expression.*
@@ -25,6 +27,7 @@ object Executor {
     private val executors = mapOf(
         FileBlock::class to FileBlockExecutor,
         REPLBlock::class to REPLBlockExecutor,
+        ClosureBlock::class to ClosureBlockExecutor,
 
         BinaryExpression::class to BinaryExpressionExecutor,
         GroupingExpression::class to GroupingExpressionExecutor,
