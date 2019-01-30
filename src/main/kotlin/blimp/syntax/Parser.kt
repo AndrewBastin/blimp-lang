@@ -2,6 +2,7 @@ package blimp.syntax
 
 import blimp.lex.Token
 import blimp.syntax.closures.ClosureBlock
+import blimp.syntax.closures.IfBlock
 import blimp.syntax.expression.Expression
 import blimp.syntax.statement.statements.assigns.AssignStatement
 import blimp.syntax.statement.statements.assigns.CreateAssignStatement
@@ -16,6 +17,7 @@ object Parser {
 
         // Closures
         ClosureBlock.Emitter,
+        IfBlock.Emitter,
 
         // Statements
         // OP Statements

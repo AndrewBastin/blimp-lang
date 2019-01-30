@@ -2,6 +2,7 @@ package blimp.runtime
 
 import blimp.runtime.execution.executors.closures.ClosureBlockExecutor
 import blimp.runtime.execution.executors.closures.FileBlockExecutor
+import blimp.runtime.execution.executors.closures.IfBlockExecutor
 import blimp.runtime.execution.executors.closures.REPLBlockExecutor
 import blimp.runtime.execution.executors.expression.*
 import blimp.runtime.execution.executors.statement.assigns.AssignStatementExecutor
@@ -13,6 +14,7 @@ import blimp.runtime.execution.executors.statement.ops.PutOpStatementExecutor
 import blimp.syntax.Node
 import blimp.syntax.closures.ClosureBlock
 import blimp.syntax.closures.FileBlock
+import blimp.syntax.closures.IfBlock
 import blimp.syntax.closures.REPLBlock
 import blimp.syntax.expression.*
 import blimp.syntax.statement.statements.assigns.AssignStatement
@@ -28,6 +30,7 @@ object Executor {
         FileBlock::class to FileBlockExecutor,
         REPLBlock::class to REPLBlockExecutor,
         ClosureBlock::class to ClosureBlockExecutor,
+        IfBlock::class to IfBlockExecutor,
 
         BinaryExpression::class to BinaryExpressionExecutor,
         GroupingExpression::class to GroupingExpressionExecutor,
