@@ -29,6 +29,7 @@ object Lexer {
         IdentifierToken.Emitter,
 
         // Single Char
+        CurlyBraceToken.Emitter,
         AssignToken.Emitter,
         BracketToken.Emitter,
         DotToken.Emitter,
