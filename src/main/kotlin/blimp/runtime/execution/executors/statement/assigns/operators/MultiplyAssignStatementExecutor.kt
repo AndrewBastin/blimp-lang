@@ -7,19 +7,19 @@ import blimp.syntax.statement.statements.assigns.operators.MultiplyAssignStateme
 
 object MultiplyAssignStatementExecutor: StatementExecutor<MultiplyAssignStatement>() {
     override fun execute(n: MultiplyAssignStatement, env: Environment) {
-        if (env.objects.contains(n.identifier)) {
+        if (env.contains(n.identifier)) {
 
-            if (env.objects[n.identifier]!!.mutable) {
+            if (env[n.identifier]!!.mutable) {
 
                 val obj = Executor.evaluate(n.expr, env)
 
-                if (obj.type == env.objects[n.identifier]!!.type) {
+                if (obj.type == env[n.identifier]!!.type) {
 
-                    env.objects[n.identifier] = env.objects[n.identifier]!!.copy(
-                        value = env.objects[n.identifier]!!.type.typeOperator.mul(env.objects[n.identifier]!!, obj).value
+                    env[n.identifier] = env[n.identifier]!!.copy(
+                        value = env[n.identifier]!!.type.typeOperator.mul(env[n.identifier]!!, obj).value
                     )
 
-                } else throw Exception("Cannot assign a ${obj.type.typeName} to a ${env.objects[n.identifier]!!.type.typeName}")
+                } else throw Exception("Cannot assign a ${obj.type.typeName} to a ${env[n.identifier]!!.type.typeName}")
 
             } else throw Exception("Variable '${n.identifier}' cannot be changed.")
 

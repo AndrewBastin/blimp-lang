@@ -11,7 +11,7 @@ fun main() {
     println("Blimp Interactive Console")
     println()
 
-    val env = Environment()
+    val env = Environment.spawnRoot()
 
     while (true) {
 
@@ -24,6 +24,9 @@ fun main() {
             command += "\n"
             command += readLine()!!
         }
+
+        // Remove tabs
+        command = command.replace("\t", " ")
 
         try {
             val tokens = Lexer.lex(command)

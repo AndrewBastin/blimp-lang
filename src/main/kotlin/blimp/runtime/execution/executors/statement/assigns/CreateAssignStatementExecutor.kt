@@ -8,8 +8,9 @@ import blimp.syntax.statement.statements.assigns.CreateAssignStatement
 object CreateAssignStatementExecutor: StatementExecutor<CreateAssignStatement>() {
 
     override fun execute(n: CreateAssignStatement, env: Environment) {
-        if (env.objects.containsKey(n.identifier)) throw Exception("Variable '${n.identifier}' already declared")
-        env.objects[n.identifier] = Executor.evaluate(n.expression, env).copy(mutable = n.mutable)
+        // Overriding checkParents to allow variable shadowing
+        if (env.contains(n.identifier, false)) throw Exception("Variable '${n.identifier}' already declared")
+        env.createObject(n.identifier, Executor.evaluate(n.expression, env).copy(mutable = n.mutable))
     }
 
 }

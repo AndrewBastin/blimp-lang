@@ -6,7 +6,7 @@ import blimp.syntax.expression.IdentifierExpression
 
 object IdentifierExpressionExecutor: ExpressionExecutor<IdentifierExpression>() {
     override fun evaluate(n: IdentifierExpression, env: Environment): BlimpObject {
-        return env.objects[n.identifier] ?: throw Exception("Variable '${n.identifier}' not defined")
+        return env[n.identifier] ?: throw Exception("Variable '${n.identifier}' not defined")
     }
 
 }

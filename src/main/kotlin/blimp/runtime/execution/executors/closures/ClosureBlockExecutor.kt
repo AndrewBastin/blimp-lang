@@ -12,8 +12,9 @@ object ClosureBlockExecutor: BlockExecutor<ClosureBlock>() {
     }
 
     override fun execute(n: ClosureBlock, env: Environment) {
+        val workEnv = env.spawnChild() // Closures spawn child envs
         n.children.forEach {
-            Executor.execute(it, env)
+            Executor.execute(it, workEnv)
         }
     }
 
