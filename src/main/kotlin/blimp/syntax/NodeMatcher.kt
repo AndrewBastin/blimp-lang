@@ -50,7 +50,7 @@ class NodeMatcher {
 
     fun match(tokens: List<Token>): Boolean {
         return try {
-            getRemainder(tokens)
+            process(tokens)
 
             true
         } catch (e: Exception) {
@@ -72,7 +72,7 @@ class NodeMatcher {
 
     // To commonize getRemainder, getSingleTokenTags, getTokenCollectionTags
     // The triple returns the values for the functions as in the above order
-    private fun process(tokens: List<Token>) : Triple<List<Token>, Map<String, Token>, Map<String, List<Token>>> {
+    fun process(tokens: List<Token>) : Triple<List<Token>, Map<String, Token>, Map<String, List<Token>>> {
 
         val singleTokenTags = mutableMapOf<String, Token>()
         val tokenCollectionTags = mutableMapOf<String, List<Token>>()
@@ -123,8 +123,8 @@ class NodeMatcher {
                     }
                 }
 
-                clearNewlines()
-                while (!tokensToValidate.empty() && tokensToValidate.peek() !is SemicolonToken && query.consider(tokensToValidate.peek())) {
+                while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() is NewLineToken) tokensToValidate.pop()
+                while (tokensToValidate.isNotEmpty() && tokensToValidate.peek() !is SemicolonToken && query.consider(tokensToValidate.peek())) {
                     tokenList.add(tokensToValidate.pop())
 
                     clearNewlines()
