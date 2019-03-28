@@ -30,6 +30,7 @@ fun main() {
 
         try {
             val tokens = Lexer.lex(command)
+            println(tokens)
             val nodes = Parser.getNodes(tokens)
             val block = REPLBlock(nodes)
 
@@ -40,8 +41,6 @@ fun main() {
 
         } catch (e: Exception) {
             println(e.message)
-
-            throw e
         }
 
     }

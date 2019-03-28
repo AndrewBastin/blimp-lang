@@ -34,7 +34,7 @@ data class BinaryOpToken(val op: BinaryOp): Token(), Comparable<BinaryOpToken> {
 
     companion object Emitter : TokenEmitter() {
 
-        override val REGEX: Regex = "([*|/|+|\\-|&|||>|<|]|(>=)|(<=)|(==)|(!=)|(as)|(is))".toRegex()
+        override val REGEX: Regex = "([*|/|+|\\-|&|||>|<|]z|(>=)|(<=)|(==)|(!=)|(as)|(is))".toRegex()
 
         override fun getToken(match: String) = BinaryOpToken(
 
